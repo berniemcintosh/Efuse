@@ -6,8 +6,8 @@
 #define IDENTIFYCHIP
 void handleButton(int);
 const int SHORT_PRESS_TIME = 1000; // 1000 milliseconds
-const int LONG_PRESS_TIME  = 2000; // 1000 milliseconds
-adcChannel	chan0;	
+const int LONG_PRESS_TIME = 2000;  // 1000 milliseconds
+adcChannel chan0;
 adcChannel chan1;
 int i = 0;
 char buffer[100];
@@ -16,7 +16,7 @@ uint16_t adcTripTime[4];
 int channelIndex;
 
 void setup()
-{ 
+{
 
   // Place starting trip curernt and trip time valus here
   adcTripCurrent[0] = 1000; // mA
@@ -39,33 +39,21 @@ void setup()
   Serial.println(buffer);
 #endif
   setupIO();
- setupADC();
+  setupADC();
   chan0.init(1, 11, NULL, &handleButton);
-chan1.init(0, 10, NULL, &handleButton);
+  chan1.init(0, 10, NULL, &handleButton);
 }
-
-
-
-
 
 void loop()
 {
-  
-   chan0.handler();
-   chan1.handler();
- 
 
-
-
-
-
-
-  
+  chan0.handler();
+  chan1.handler();
 }
 
-void handleButton(int p){
+void handleButton(int p)
+{
 
-  sprintf(buffer, "Channel %i      ADC %i     Output %s ",p,adcRaw[p],"ON");
+  sprintf(buffer, "Channel %i      ADC %i    Output %s ", p, adcRaw[p], "ON");
   Serial.println(buffer);
-  
 }
