@@ -65,11 +65,7 @@ void loop()
 
 void handleButton(int p){
 
-
-  
-  sprintf(buffer, "%i     %i  ", p, adcRawDiscarded[p], adcRawDiscarded[1], adcRawDiscarded[2], adcRawDiscarded[3]);
-  Serial.println(buffer);
-  sprintf(buffer, "%i     %i  ",p, adcRaw[0], adcRaw[1p, adcRaw[2], adcRaw[3]);
+  sprintf(buffer, "Channel %i      ADC %i     Output %s ",p,adcRaw[p],"ON");
   Serial.println(buffer);
   
 }
