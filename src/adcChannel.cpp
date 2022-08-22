@@ -27,9 +27,8 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(i
 	#if defined(DBG_adcChannel)
 		Serial.begin(115200);
 	#endif
-
+    outputState = false;
 	pinMode(pin, INPUT_PULLUP);
-
 	Pin = pin;
 	Logic = logic;
 	Repeat = repeat;
@@ -42,9 +41,10 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(i
 	pusDone = false;
 	relDone = true;
 
-	butState = LOW;
+	butState = HIGH;
 	holdTime = 0;
 	memTime = TIME;
+	
 }
 
 void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int))
@@ -54,12 +54,12 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(i
 
 bool adcChannel::handler(void)
 {
-	
+
 	#if defined(DBG_adcChannel)
 		static bool dbg = false;
 	#endif
 
-	if (digitalRead(Pin) == Logic)
+	if (digitalRead(Pin) == LOW)
 	{
 		if ((TIME - memTime >= timFilter) || (holdDone))
 		{
@@ -74,6 +74,7 @@ bool adcChannel::handler(void)
 						Serial.print("Push\n");
 						dbg = true;
 					#endif
+
 					onPush(channelIndex);
 				}
 			}
@@ -100,7 +101,10 @@ bool adcChannel::handler(void)
 		if (!relDone)
 		{
 			relDone = true;
+			if (getHoldTime() < 1000) outputState = !outputState;
 			if (onRelease)	{ onRelease(channelIndex); }	// only if callback is defined
+		    sprintf(buffer, "Channel %i      ADC %i    Output %s ", channelIndex, adcRaw[channelIndex], outputState ? "ON" : "OFF");
+            Serial.println(buffer);
 			#if defined(DBG_adcChannel)
 				Serial.print("Release\n");
 				dbg = false;

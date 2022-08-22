@@ -1,11 +1,10 @@
 #include "fuseio.h"
 
 volatile byte admuxChannel = 0;
-volatile uint16_t adcRaw[4];
-volatile uint16_t adcRawDiscarded[4];
-volatile bool adcSwitchEnabled[4] = {false,false,false,false};
-volatile bool adcOutputEnabled[4] = {false,false,false,false};
-volatile ledState chan[4] = {off,off,off,off};
+volatile uint16_t adcRaw[CHANNELS];
+volatile uint16_t adcRawDiscarded[CHANNELS];
+
+
 volatile bool newReadingAvailable = false;
 volatile bool toBeDiscarded=true;
 volatile uint16_t dummyResult; 
@@ -28,7 +27,7 @@ SCOPE_4_OFF;
 
 void setupADC()
 {
-    for (int i=0;i <= 3; i++) adcRaw[i] = 0;  // set all the initial readings to zero
+    for (int i=0;i < CHANNELS; i++) adcRaw[i] = 0;  // set all the initial readings to zero
     //Set up ADC. To be run once at startup.
 
 
@@ -80,7 +79,7 @@ ISR(TIMER2_COMPA_vect)
     // might need t use a ADCisStable flag to ignore first reading
 SCOPE_1_ON ;
 if (toBeDiscarded == true) {
-if (++admuxChannel > 3) admuxChannel = 0;
+if (++admuxChannel >= CHANNELS) admuxChannel = 0;
 ADMUX = ( B01000000 | admuxChannel);  // set to the next channel, leaving the first nybble of the register unchanged
 //ADMUX |= ( B01000000 );  // set to the next channel, leaving the first nybble of the register unchanged
 }

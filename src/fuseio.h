@@ -1,8 +1,10 @@
 #ifndef FUSEIO_H
 #define FUSEIO_H
 
+
 #include <avr/io.h>
 #include <Arduino.h>
+#include "config.h"
 
 
 enum ledState {off, on, flash};
@@ -14,14 +16,14 @@ extern void  setupADC();
 
 
 
- extern volatile bool adcSwitchEnabled[4];
-  extern volatile bool adcOutputEnabled[4];
-  extern volatile ledState chan[4];
+ extern volatile bool adcSwitchEnabled[CHANNELS];
+  extern volatile bool adcOutputEnabled[CHANNELS];
+  extern volatile ledState chanLED[CHANNELS];
 
 
 extern volatile byte admuxChannel;
-extern volatile uint16_t adcRaw[4];
-extern volatile uint16_t adcRawDiscarded[4];
+extern volatile uint16_t adcRaw[CHANNELS];
+extern volatile uint16_t adcRawDiscarded[CHANNELS];
 extern volatile bool newReadingAvailable;
 
 

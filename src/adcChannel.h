@@ -8,7 +8,7 @@
 
 #ifndef adcChannel_h
 #define adcChannel_h
-
+#include "config.h"
 #include <inttypes.h>
 
 //#define		DBG_adcChannel
@@ -18,11 +18,16 @@
 **	\brief Class containing the required methods for handling sequential button
 **/
 
+extern char buffer[100];
+extern volatile uint16_t adcRaw[CHANNELS];
 
 
 class adcChannel
 {
 private:
+    bool outputState ;
+     uint16_t tripTime ;
+     uint16_t tripCurrent ;
 	uint32_t	memTime;					//!< Previously recorded timer
 	uint32_t	holdTime;					//!< Time button held
 	bool		butState;					//!< Memorized button state
@@ -40,7 +45,7 @@ private:
 
 public:
 
-    volatile uint16_t adcRaw;
+    
 	/*!	\brief Initialization routine
 	**	\note Input pin is configured with device internal pullup
 	**	\param [in] pin - Pin on which button is connected
@@ -52,7 +57,7 @@ public:
 	**	\note Callbacks have to be declared using an adcChannel* as parameter (instance is passed to the callback function)
 	**	\return nothing
 	**/
-	void init(const uint8_t channel, const uint8_t pin, void (*cbckON)( int p), void (*cbckOFF)( int p), const bool repeat, const bool logic=LOW, const uint32_t filter=50);
+	void init(const uint8_t channel, const uint8_t pin, void (*cbckON)( int p), void (*cbckOFF)( int p), const bool repeat, const bool logic=HIGH, const uint32_t filter=50);
 
 	/*!	\brief Initialization routine
 	**	\note Input pin is configured with device internal pullup
