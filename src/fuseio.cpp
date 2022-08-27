@@ -1,13 +1,18 @@
 #include "fuseio.h"
+#include "config.h"
 
+PCA9555 ioport(PCA9555_ADDRESS);
 volatile byte admuxChannel = 0;
 volatile uint16_t adcRaw[CHANNELS];
+volatile uint16_t adcRawMvg[CHANNELS][(byte)MVGAVERAGESAMPLES];
 volatile uint16_t adcRawDiscarded[CHANNELS];
 
 
 volatile bool newReadingAvailable = false;
 volatile bool toBeDiscarded=true;
 volatile uint16_t dummyResult; 
+volatile byte mvgAvgCount[CHANNELS];
+
 
 void setupIO()
 {
@@ -27,7 +32,9 @@ SCOPE_4_OFF;
 
 void setupADC()
 {
-    for (int i=0;i < CHANNELS; i++) adcRaw[i] = 0;  // set all the initial readings to zero
+    for (int i=0;i < CHANNELS; i++) {adcRaw[i] = 0; mvgAvgCount[i]=0;}  // set all the initial readings to zero
+    for (int i=0;i < CHANNELS;i++) for (int j=0; j< MVGAVERAGESAMPLES;j++)   adcRawMvg[i][j]=0;
+
     //Set up ADC. To be run once at startup.
 
 
@@ -78,7 +85,7 @@ ISR(TIMER2_COMPA_vect)
 {
     // might need t use a ADCisStable flag to ignore first reading
 SCOPE_1_ON ;
-if (toBeDiscarded == true) {
+if (toBeDiscarded == false) {
 if (++admuxChannel >= CHANNELS) admuxChannel = 0;
 ADMUX = ( B01000000 | admuxChannel);  // set to the next channel, leaving the first nybble of the register unchanged
 //ADMUX |= ( B01000000 );  // set to the next channel, leaving the first nybble of the register unchanged
@@ -97,6 +104,9 @@ ISR(ADC_vect)
     } else {
     low = ADCL;
     adcRaw[admuxChannel] = ADCH << 8 | low;
+    adcRawMvg[admuxChannel][mvgAvgCount[admuxChannel]] = adcRaw[admuxChannel];
+    mvgAvgCount[admuxChannel]++;
+   if (mvgAvgCount[admuxChannel]>(byte)MVGAVERAGESAMPLES-(uint8_t)1) mvgAvgCount[admuxChannel] = (byte)0;
     toBeDiscarded = true;
     }
     SCOPE_2_OFF;

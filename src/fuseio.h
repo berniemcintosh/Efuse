@@ -5,26 +5,29 @@
 #include <avr/io.h>
 #include <Arduino.h>
 #include "config.h"
+#include "clsPCA9555.h"
 
 
 enum ledState {off, on, flash};
 
 extern void setupIO();
 extern void  setupADC();
+extern char buffer[120];
+extern PCA9555 ioport;
 
 
 
 
 
- extern volatile bool adcSwitchEnabled[CHANNELS];
-  extern volatile bool adcOutputEnabled[CHANNELS];
-  extern volatile ledState chanLED[CHANNELS];
+  
+  
 
 
 extern volatile byte admuxChannel;
 extern volatile uint16_t adcRaw[CHANNELS];
+extern volatile uint16_t adcRawMvg[CHANNELS][MVGAVERAGESAMPLES];
 extern volatile uint16_t adcRawDiscarded[CHANNELS];
-extern volatile bool newReadingAvailable;
+
 
 
 
