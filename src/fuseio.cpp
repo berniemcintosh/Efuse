@@ -8,14 +8,14 @@ volatile uint16_t adcRawMvg[CHANNELS][(byte)MVGAVERAGESAMPLES];
 volatile uint16_t adcRawDiscarded[CHANNELS];
 
 
-volatile bool newReadingAvailable = false;
+
 volatile bool toBeDiscarded=true;
-volatile uint16_t dummyResult; 
-volatile byte mvgAvgCount[CHANNELS];
+volatile byte mvgAvgCount[CHANNELS];   // A moving average of the ADC readings is maintained
 
 
 void setupIO()
 {
+    // Setup the oscilloscope ports
 
   //  DDRA |= (1 << 7) | (1 << 6 ) | (1 << 4) ;
   //  DDRB |= (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0);

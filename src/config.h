@@ -10,12 +10,5 @@ extern char buffer[120];
 #define IDENTIFYCHIP
 #define STARTUP_FLASH_TIME 1500  // Milliseconds
 
-const int SHORT_PRESS_TIME = 1000; // 1000 milliseconds
-const int LONG_PRESS_TIME = 2000;  // 1000 milliseconds
-
-
-
-
-
 #endif
 

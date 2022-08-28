@@ -1,32 +1,19 @@
-/*!\file adcChannel.cpp
-** \author SMFSW
-** \date 2018/07/15
-** \copyright BSD 3-Clause License (c) 2017-2018, SMFSW
-** \brief Sequential Button Arduino Library
-** \details Handling filtered button press with callbacks for push (with or without repeat) and release, logic and filtering time
-**/
+// Class for a channel and associated button handling
 
 #include <Arduino.h>
-#if defined(DBG_adcChannel)
-#include <HardwareSerial.h>
-#endif
+
 
 #include "adcChannel.h"
 #include "fuseio.h"
-
 #define TIME millis()
 
-// void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int), const bool repeat, const bool logic, const uint32_t filter)
 void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(adcChannel *), void (*cbckOFF)(adcChannel *), const bool repeat, const bool logic, const uint32_t filter)
 {
-#if defined(DBG_adcChannel)
-	Serial.begin(115200);
-#endif
+
 	nextFlash = false;
 	tripped = false;
 	outputEnabled = false;
-	// pinMode(pin, INPUT_PULLUP);
-	ioport.pinMode(pin + 8, INPUT_PULLUP); // change to PCA9555
+	ioport.pinMode(pin + 8, INPUT_PULLUP); 
 	Serial.println(pin + 8);
 	Pin = pin + 8;
 	Logic = logic;
@@ -45,7 +32,6 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(a
 	memTime = TIME;
 }
 
-// void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int))
 void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(adcChannel *), void (*cbckOFF)(adcChannel *))
 {
 	init(channel, pin, cbckON, cbckOFF, false, LOW, 50);
@@ -182,12 +168,12 @@ uint16_t adcChannel::adcRawAverage(void)
 	return total / MVGAVERAGESAMPLES;
 }
 
-bool adcChannel::isEnabled(void)
+bool adcChannel::isEnabled(void)   // Returns true if the channel associated with (this) is true
 {
 
 	return outputEnabled;
 }
-void adcChannel::allChannels(bool switchAll)
+void adcChannel::allChannels(bool switchAll)  //  Takes action on all channels
 {
 
 	for (int d = 0; d < CHANNELS; d++)
@@ -195,13 +181,13 @@ void adcChannel::allChannels(bool switchAll)
 		channelObj[d].switchChannel(switchAll);
 	}
 }
-void adcChannel::switchChannel(bool switchDirection)
+void adcChannel::switchChannel(bool switchDirection) // Control of a single channel output
 {
 	outputEnabled = switchDirection;
 	ioport.digitalWrite(channelIndex, outputEnabled);
 }
 
-bool adcChannel::areAllEnabled()
+bool adcChannel::areAllEnabled()  // returns true if all outputs are enabled otherwise returns false
 {
 	bool allEnabled = true;
 	for (int d = 0; d < CHANNELS; d++)

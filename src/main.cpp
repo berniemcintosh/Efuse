@@ -1,3 +1,4 @@
+//  The Main Program
 #include <Arduino.h>
 #include <string.h>
 #include "config.h"
@@ -5,20 +6,27 @@
 #include "adcChannel.h"
 #include "SeqButton.h"
 
-// There are two button handler classes. One is the class SeqButton. This is unmodified from
-// a library and is used for button presses not relating to a particular channel.
-// The other is adcChannel which was modified to include all of the Efuse behaviour inside the class while handling the on-off buttons.
+/* 
+There are two button handler classes. One is the class SeqButton. This is unmodified from
+ a library and is used for button presses not relating to a particular channel.
+ The other is adcChannel which was modified to include all of the Efuse behaviour inside the class while
+ still  handling the on-off buttons.
+ */
 
 void handleButton(adcChannel * button); // May not get used, but this is a callback from adcChannel
-void handleButton12(SeqButton * button);  // Callback from SeqButton, for the instance buttonport12
-void handleButton13(SeqButton * button);  // Callback from SeqButton, for the instance buttonport12
-void programMode(void);
+void handleButton12(SeqButton * button);  // Callback from SeqButton, for the instance buttonport12, i.e. the fifth switch
+void handleButton13(SeqButton * button);  // Callback from SeqButton, for the instance buttonport13, i.e. the sixth switch
+void programMode(void);  // This function handles comletely prograMode and you do not leave this function until all programming is complete.
 // Define all the button handlers
-adcChannel channelObj[CHANNELS];
+adcChannel channelObj[CHANNELS];  // One channel for each controlled channel
+SeqButton buttonPort8;
+SeqButton buttonPort9;
+SeqButton buttonPort10;
+SeqButton buttonPort11;
 SeqButton buttonPort12;
 SeqButton buttonPort13;
 
-// Define the IO Expander classes. This is a simple way of using one piece of code for Channel Buttons and another piece for others
+// Define the IO Expander class. 
 PCA9555 ioport(PCA9555_ADDRESS);
 
 // Some general purpose variables.
@@ -60,9 +68,13 @@ void setup()  // Runs Once
   {
     channelObj[c].init(c, c, NULL, &handleButton);
   }
+  buttonPort8.init(8, NULL);
+  buttonPort9.init(9, NULL);
+  buttonPort10.init(10, NULL);
+  buttonPort11.init(11, NULL);
   buttonPort12.init(12, &handleButton12);
   buttonPort13.init(13, &handleButton13);
-  delay(100);
+ 
 }
 
 void loop()   // repeats
@@ -92,5 +104,5 @@ void handleButton13(SeqButton * button) // Callback from 6th button handler. Tur
 }
 
 void programMode(void) {
-  
+
 }

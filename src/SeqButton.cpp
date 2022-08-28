@@ -1,22 +1,4 @@
-/*!\file SeqButton.cpp
-** \author SMFSW
-** \date 2018/07/15
-** \copyright BSD 3-Clause License (c) 2017-2018, SMFSW
-** \brief Sequential Button Arduino Library
-** \details Handling filtered button press with callbacks for push (with or without repeat) and release, logic and filtering time
-**/
-
-
-#if ARDUINO > 22
 #include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
-
-#if defined(DBG_SEQBUTTON)
-#include <HardwareSerial.h>
-#endif
-
 #include "SeqButton.h"
 
 #define		TIME	millis()

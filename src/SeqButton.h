@@ -1,11 +1,5 @@
-/*!\file SeqButton.h
-** \author SMFSW
-** \date 2018/07/15
-** \copyright BSD 3-Clause License (c) 2017-2018, SMFSW
-** \brief Sequential Button Arduino Library
-** \details Handling filtered button press with callbacks for push (with or without repeat) and release, logic and filtering time
-**/
-
+// Runs in paralell with the adcChannel class and provides all button 
+// functionality without affecting any outputs
 #ifndef SeqButton_h
 #define SeqButton_h
 
