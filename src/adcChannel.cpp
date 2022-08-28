@@ -6,12 +6,7 @@
 ** \details Handling filtered button press with callbacks for push (with or without repeat) and release, logic and filtering time
 **/
 
-#if ARDUINO > 22
 #include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
-
 #if defined(DBG_adcChannel)
 #include <HardwareSerial.h>
 #endif
@@ -21,18 +16,19 @@
 
 #define TIME millis()
 
-void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int), const bool repeat, const bool logic, const uint32_t filter)
+// void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int), const bool repeat, const bool logic, const uint32_t filter)
+void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(adcChannel *), void (*cbckOFF)(adcChannel *), const bool repeat, const bool logic, const uint32_t filter)
 {
 #if defined(DBG_adcChannel)
 	Serial.begin(115200);
 #endif
-    nextFlash = false;
+	nextFlash = false;
 	tripped = false;
 	outputEnabled = false;
-	//pinMode(pin, INPUT_PULLUP);
-	ioport.pinMode(pin+8, INPUT_PULLUP);  // change to PCA9555
-	Serial.println(pin+8);
-	Pin = pin+8;
+	// pinMode(pin, INPUT_PULLUP);
+	ioport.pinMode(pin + 8, INPUT_PULLUP); // change to PCA9555
+	Serial.println(pin + 8);
+	Pin = pin + 8;
 	Logic = logic;
 	Repeat = repeat;
 	timFilter = filter;
@@ -47,57 +43,76 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(i
 	butState = HIGH;
 	holdTime = 0;
 	memTime = TIME;
-	programMode = false;
 }
 
-void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int))
+// void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int), void (*cbckOFF)(int))
+void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(adcChannel *), void (*cbckOFF)(adcChannel *))
 {
 	init(channel, pin, cbckON, cbckOFF, false, LOW, 50);
 }
 
 bool adcChannel::handler(void)
 {
-if (metro500.hasPassed(500,true))
-    if (tripped) {
-	ioport.digitalWrite(channelIndex,nextFlash);
-	nextFlash = !nextFlash;	
-	} 
-	
-if (!tripped && (adcRawAverage() > tripCurrent)) {
-	// turn off mosfet when we have got to that part of the dev
-tripped = true;
-ioport.digitalWrite(channelIndex+4,HIGH); 
-ioport.digitalWrite(channelIndex,LOW); 
-outputEnabled = false;
-
-
-}
-
-//	if (digitalRead(Pin) == LOW)
-   if (ioport.digitalRead(Pin) == LOW)
-	{
-		if ((TIME - memTime >= timFilter) || (holdDone))
+	if (metro500.hasPassed(500, true))
+		if (tripped)
 		{
-			relDone = false;
-			butState = HIGH;
-			if (!pusDone)
+			ioport.digitalWrite(channelIndex, nextFlash);
+			nextFlash = !nextFlash;
+		}
+
+	if (!tripped && (adcRawAverage() > tripCurrent))
+	{
+		// turn off mosfet when we have got to that part of the dev
+		tripped = true;
+		// ioport.digitalWrite(5,HIGH);
+		ioport.digitalWrite(channelIndex, LOW);
+		outputEnabled = false;
+	}
+
+	if (ioport.digitalRead(Pin) == LOW)
+	{  
+		if ((TIME - memTime >= timFilter) || (holdDone)) // If we have debounced the press or we have already debounced
+		{
+			relDone = false; //   mark that we haven't released yet (beacause we just started officially the button press)
+			butState = HIGH; // Button press has started so it must be high
+			if (!pusDone)	 // if this is the first time through that we have registered the button push
 			{
 				if (onPush) // only if callback is defined
 				{
 
-					onPush(channelIndex);
+					onPush(this); // mak the callback becasue this is the first time through for this particular button push
 				}
 			}
-			if (!Repeat)
+			if (!Repeat) // if we are only going to do this once for each button push
 			{
-				pusDone = true;
+				pusDone = true; // we need to set pusDone to true so next time through we don't make the callback
 			}
-			if (!holdDone)
+			if (!holdDone) // if we have just kicked things off after agreeing that it is debounced
 			{
-				memTime = TIME; // Store current time for holdTime calculations
-				holdDone = true;
+				memTime = TIME;	 // Store current time for holdTime calculations
+				holdDone = true; // next time hrough ew can see that we have already debounced if this is set to true
 			}
-			holdTime = TIME - memTime;
+			holdTime = TIME - memTime; //  regardless of if this is the first or the n'th time through, lets keep the hold time variable updated.adcRawAverage
+			if (holdTime > 6000)
+			{
+				// turn off all ports
+				allChannels(LOW);
+				// and  set programming mode here
+				programMode();
+			}
+			else if (holdTime > 3000)
+			{
+				if (areAllEnabled())
+				{
+					for (uint8_t d = 0; d < CHANNELS; d++)
+						ioport.digitalWrite(d, HIGH);
+				}
+				else
+				{
+					for (uint8_t d = 0; d < CHANNELS; d++)
+						ioport.digitalWrite(d, LOW);
+				}
+			}
 		}
 	}
 	else
@@ -110,27 +125,32 @@ outputEnabled = false;
 		if (!relDone)
 		{
 			relDone = true;
-			if (programMode){displayStatus();}
-			else{
-				if (getHoldTime() >3000)
-			{ // actions for a short button press
-				programMode=true;
+
+			if (getHoldTime() > 3000)
+			{ // actions for a longer button press
+			  //   if all the outputs are on turn them off
+				//  else
+				//  turn on all outputs
+
+				if (areAllEnabled())
+					allChannels(HIGH);
+				else
+					allChannels(LOW);
 			}
 			if (getHoldTime() < 2000)
 			{ // actions for a short button press
 				outputEnabled = !outputEnabled;
-				ioport.digitalWrite(channelIndex+4,LOW); 
-				 ioport.digitalWrite(channelIndex, outputEnabled);
-				 tripped = false;
+				// ioport.digitalWrite(5,LOW);
+				ioport.digitalWrite(channelIndex, outputEnabled);
+				tripped = false;
 			}
 
 			if (onRelease)
 			{
-				onRelease(channelIndex);
+				onRelease(this);
 			} // only if callback is defined
-            
+
 			displayStatus();
-			}
 		}
 	}
 
@@ -146,6 +166,8 @@ void adcChannel::displayStatus(void)
 
 uint16_t adcChannel::adcRawAverage(void)
 {
+
+	// This may be all wrong - rentrant or not !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	uint16_t total = 0;
 
 	SCOPE_4_ON;
@@ -158,4 +180,35 @@ uint16_t adcChannel::adcRawAverage(void)
 	// Serial.println();
 	SCOPE_4_OFF;
 	return total / MVGAVERAGESAMPLES;
+}
+
+bool adcChannel::isEnabled(void)
+{
+
+	return outputEnabled;
+}
+void adcChannel::allChannels(bool switchAll)
+{
+
+	for (int d = 0; d < CHANNELS; d++)
+	{
+		channelObj[d].switchChannel(switchAll);
+	}
+}
+void adcChannel::switchChannel(bool switchDirection)
+{
+	outputEnabled = switchDirection;
+	ioport.digitalWrite(channelIndex, outputEnabled);
+}
+
+bool adcChannel::areAllEnabled()
+{
+	bool allEnabled = true;
+	for (int d = 0; d < CHANNELS; d++)
+	{
+		if (channelObj[d].isEnabled() == true)
+
+			allEnabled = false;
+	}
+	return allEnabled;
 }

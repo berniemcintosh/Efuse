@@ -1,7 +1,7 @@
 #include "fuseio.h"
 #include "config.h"
 
-PCA9555 ioport(PCA9555_ADDRESS);
+
 volatile byte admuxChannel = 0;
 volatile uint16_t adcRaw[CHANNELS];
 volatile uint16_t adcRawMvg[CHANNELS][(byte)MVGAVERAGESAMPLES];

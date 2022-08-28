@@ -16,6 +16,8 @@
 //#define		DBG_adcChannel
 extern char buffer[120];
 extern PCA9555 ioport;
+extern void programMode(void);
+
 
 
 /*!	\class adcChannel adcChannel.h "adcChannel/adcChannel.h"
@@ -31,12 +33,12 @@ class adcChannel
 private:
 bool nextFlash;
     Chrono metro500;
-    bool programMode;
+    bool outputEnabled;
+	volatile bool tripped;
+	
 	bool Logic;			//!< Button logic: LOW for NO / HIGH for NC (internal pullup for input is enabled)
 	bool Repeat;		//!< Push callback repeated calls
 	bool butState;		  //!< Memorized button state
-	bool outputEnabled;
-	volatile bool tripped;
 	uint32_t memTime;	  //!< Previously recorded timer
 	uint32_t holdTime;	  //!< Time button held
 	uint32_t timFilter; //!< Filtering time (in ms)	
@@ -47,12 +49,13 @@ bool nextFlash;
 	uint8_t Pin;		//!< Pin on which button is connected
 	uint8_t relDone : 1;  //!< OFF function already called
 	uint8_t channelIndex;
-	void (*onPush)(int);	//!< Push callback ON function pointer
-	void (*onRelease)(int); //!< Push callback OFF function pointer
+	void (*onPush)(adcChannel *);	//!< Push callback ON function pointer
+	void (*onRelease)(adcChannel *); //!< Push callback OFF function pointer
 	void displayStatus (void);
 	uint16_t adcRawAverage (void);
 
 public:
+
 	/*!	\brief Initialization routine
 	**	\note Input pin is configured with device internal pullup
 	**	\param [in] pin - Pin on which button is connected
@@ -64,8 +67,8 @@ public:
 	**	\note Callbacks have to be declared using an adcChannel* as parameter (instance is passed to the callback function)
 	**	\return nothing
 	**/
-	void init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int p), void (*cbckOFF)(int p), const bool repeat, const bool logic = HIGH, const uint32_t filter = 50);
-
+	//void init(const uint8_t channel, const uint8_t pin, void (*cbckON)(int p), void (*cbckOFF)(int p), const bool repeat, const bool logic = HIGH, const uint32_t filter = 50);
+      void init(const uint8_t channel, const uint8_t pin, void (*cbckON)(adcChannel*), void (*cbckOFF)(adcChannel*), const bool repeat, const bool logic=LOW, const uint32_t filter=50);
 	/*!	\brief Initialization routine
 	**	\note Input pin is configured with device internal pullup
 	**	\param [in] pin - Pin on which button is connected
@@ -74,13 +77,19 @@ public:
 	**	\note Callbacks have to be declared using an adcChannel* as parameter (instance is passed to the callback function)
 	**	\return nothing
 	**/
-	void init(const uint8_t channel, uint8_t pin, void (*cbckON)(int p), void (*cbckOFF)(int p) = NULL);
+	//void init(const uint8_t channel, uint8_t pin, void (*cbckON)(int p), void (*cbckOFF)(int p) = NULL);
+	  void init(const uint8_t channel, uint8_t pin, void (*cbckON)(adcChannel*), void (*cbckOFF)(adcChannel*)=NULL);
 
 	/*!	\brief Check button state and perform callbacks accordingly
 	**	\note handler for button, this function has to be called in a pseudo main loop to work properly
 	**	\return Current button state
 	**/
+    bool isEnabled(void);
+	void allChannels(bool);
+	void switchChannel(bool);
+	bool areAllEnabled(void);
 	bool handler(void);
+	
 
 	/*!	\brief Get button pin
 	**	\return Current pin assigned to instance
@@ -115,5 +124,9 @@ public:
 		return holdTime;
 	}
 };
+
+
+extern adcChannel channelObj[];
+
 
 #endif /* adcChannel_h */
