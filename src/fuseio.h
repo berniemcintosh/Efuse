@@ -38,6 +38,8 @@ void makeTone(uint16_t, uint16_t);
 #define SCOPE_4_ON PORTD &= ~(1 << 5)
 #define SCOPE_4_OFF PORTD |= (1 << 5)
 #define SCOPE_4_TOGGLE PORTD ^= (1 << 5)
+#define BUZZ_OFF PORTB &= ~(1 << 1)
+#define BUZZ_ON PORTB |= (1 << 1)
 
 
 

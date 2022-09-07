@@ -21,10 +21,12 @@ void setupIO()
   //  DDRB |= (1 << 3) | (1 << 2) | (1 << 1) | (1 << 0);
  //   DDRC |= (1 << 7) | (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3) | (1 << 2);
     DDRD |= (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5); // Scope ports for monitoring timing on eval board
+     DDRB |=  (1 << 1); // Buzzer set output port
 SCOPE_1_OFF;
 SCOPE_2_OFF;
 SCOPE_3_OFF;
 SCOPE_4_OFF;
+
 
  
 }

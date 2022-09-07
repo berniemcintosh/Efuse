@@ -26,7 +26,7 @@ void adcChannel::init(const uint8_t channel, const uint8_t pin, void (*cbckON)(a
 	pusDone = false;
 	relDone = true;
 	timeToTrip = 100;
-	tripCurrent = 500;
+	tripCurrent = 5;
 	butState = HIGH;
 	holdTime = 0;
 	memTime = TIME;
@@ -46,7 +46,7 @@ bool adcChannel::handler(void)
 			nextFlash = !nextFlash;
 		}
 
-	if (!tripped && (adcRawAverage() > tripCurrent))
+	if (!tripped && (adcRawAverage() > tripTable[tripCurrent]))
 	{
 		// turn off mosfet when we have got to that part of the dev
 		tripped = true;
@@ -79,14 +79,8 @@ bool adcChannel::handler(void)
 				holdDone = true; // next time hrough ew can see that we have already debounced if this is set to true
 			}
 			holdTime = TIME - memTime; //  regardless of if this is the first or the n'th time through, lets keep the hold time variable updated.adcRawAverage
-			if (holdTime > 6000)
-			{
-				// turn off all ports
-				allChannels(LOW);
-				// and  set programming mode here
-				programMode();
-			}
-			else if (holdTime > 3000)
+
+			if (holdTime > 3000)
 			{
 				if (areAllEnabled())
 				{
@@ -111,7 +105,14 @@ bool adcChannel::handler(void)
 		if (!relDone)
 		{
 			relDone = true;
-
+			if (holdTime > 6000)
+			{
+				// turn off all ports
+				allChannels(LOW);
+				// and  set programming mode here
+				programMode(Pin, tripCurrent);
+			}
+			else
 			if (getHoldTime() > 3000)
 			{ // actions for a longer button press
 			  //   if all the outputs are on turn them off

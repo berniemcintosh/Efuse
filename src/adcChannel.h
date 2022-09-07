@@ -10,8 +10,8 @@
 //#define		DBG_adcChannel
 extern char buffer[120];
 extern PCA9555 ioport;
-extern void programMode(void);
-
+extern void programMode(uint8_t,uint8_t);
+extern int tripTable[TRIPLEVELS];
 
 
 /*!	\class adcChannel adcChannel.h "adcChannel/adcChannel.h"
@@ -37,7 +37,7 @@ bool nextFlash;
 	uint32_t holdTime;	  //!< Time button held
 	uint32_t timFilter; //!< Filtering time (in ms)	
 	uint16_t timeToTrip;
-	uint16_t tripCurrent;
+	uint8_t tripCurrent;
 	uint8_t holdDone : 1; //!< Time for button hold already memorized
 	uint8_t pusDone : 1;  //!< ON function already called
 	uint8_t Pin;		//!< Pin on which button is connected
@@ -113,7 +113,12 @@ public:
 	/*!	\brief Get button hold duration
 	**	\return Current button hold duration
 	**/
-	uint32_t getHoldTime(void) __attribute__((always_inline))
+	uint8_t getTripCurrent(void) __attribute__((always_inline))
+	{
+		return tripCurrent;
+	}
+
+		uint32_t getHoldTime(void) __attribute__((always_inline))
 	{
 		return holdTime;
 	}

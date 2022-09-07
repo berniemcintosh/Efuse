@@ -1,13 +1,27 @@
-// Runs in paralell with the adcChannel class and provides all button 
+// Runs in paralell with the adcChannel class and provides all button
 // functionality without affecting any outputs
 #ifndef SeqButton_h
 #define SeqButton_h
 
 #include <inttypes.h>
 #include "clsPCA9555.h"
+#include "fuseio.h"
 
 //#define		DBG_SEQBUTTON
 extern PCA9555 ioport;
+
+class buzzer
+{
+private:
+	uint32_t duration;
+	uint32_t onTime;
+	bool isOn;
+
+public:
+	buzzer();
+	void sound(uint32_t);
+	void process(void);
+};
 
 /*!	\class SeqButton SeqButton.h "SeqButton/SeqButton.h"
 **	\brief Class containing the required methods for handling sequential button
@@ -15,20 +29,20 @@ extern PCA9555 ioport;
 class SeqButton
 {
 private:
-	uint32_t	memTime;					//!< Previously recorded timer
-	uint32_t	holdTime;					//!< Time button held
-	bool		butState;					//!< Memorized button state
-	uint8_t		holdDone		:1;			//!< Time for button hold already memorized
-	uint8_t		pusDone			:1;			//!< ON function already called
-	uint8_t		relDone			:1;			//!< OFF function already called
+	uint32_t memTime;	  //!< Previously recorded timer
+	uint32_t holdTime;	  //!< Time button held
+	bool butState;		  //!< Memorized button state
+	uint8_t holdDone : 1; //!< Time for button hold already memorized
+	uint8_t pusDone : 1;  //!< ON function already called
+	uint8_t relDone : 1;  //!< OFF function already called
 
-	uint8_t		Pin;						//!< Pin on which button is connected
-	uint32_t	timFilter;					//!< Filtering time (in ms)
-	bool		Logic;						//!< Button logic: LOW for NO / HIGH for NC (internal pullup for input is enabled)
-	bool		Repeat;						//!< Push callback repeated calls
+	uint8_t Pin;		//!< Pin on which button is connected
+	uint32_t timFilter; //!< Filtering time (in ms)
+	bool Logic;			//!< Button logic: LOW for NO / HIGH for NC (internal pullup for input is enabled)
+	bool Repeat;		//!< Push callback repeated calls
 
-	void		(*onPush)(SeqButton*);		//!< Push callback ON function pointer
-	void		(*onRelease)(SeqButton*);	//!< Push callback OFF function pointer
+	void (*onPush)(SeqButton *);	//!< Push callback ON function pointer
+	void (*onRelease)(SeqButton *); //!< Push callback OFF function pointer
 
 public:
 	/*!	\brief Initialization routine
@@ -42,7 +56,7 @@ public:
 	**	\note Callbacks have to be declared using an SeqButton* as parameter (instance is passed to the callback function)
 	**	\return nothing
 	**/
-	void init(const uint8_t pin, void (*cbckON)(SeqButton*), void (*cbckOFF)(SeqButton*), const bool repeat, const bool logic=LOW, const uint32_t filter=50);
+	void init(const uint8_t pin, void (*cbckON)(SeqButton *), void (*cbckOFF)(SeqButton *), const bool repeat, const bool logic = LOW, const uint32_t filter = 50);
 
 	/*!	\brief Initialization routine
 	**	\note Input pin is configured with device internal pullup
@@ -52,7 +66,7 @@ public:
 	**	\note Callbacks have to be declared using an SeqButton* as parameter (instance is passed to the callback function)
 	**	\return nothing
 	**/
-	void init(uint8_t pin, void (*cbckON)(SeqButton*), void (*cbckOFF)(SeqButton*)=NULL);
+	void init(uint8_t pin, void (*cbckON)(SeqButton *), void (*cbckOFF)(SeqButton *) = NULL);
 
 	/*!	\brief Check button state and perform callbacks accordingly
 	**	\note handler for button, this function has to be called in a pseudo main loop to work properly
@@ -63,28 +77,35 @@ public:
 	/*!	\brief Get button pin
 	**	\return Current pin assigned to instance
 	**/
-	uint8_t getPin(void) __attribute__((always_inline)) {
-		return Pin; }
+	uint8_t getPin(void) __attribute__((always_inline))
+	{
+		return Pin;
+	}
 
 	/*!	\brief Get button state
 	**	\return Current button state
 	**/
-	bool getState(void) __attribute__((always_inline)) {
-		return butState; }
+	bool getState(void) __attribute__((always_inline))
+	{
+		return butState;
+	}
 
 	/*!	\brief Get button state
 	**	\deprecated getButton was already used in SeqButton lib, alias is made to keep compatibility with earlier versions
 	**	\return Current button state
 	**/
-	bool getButton(void) __attribute__((always_inline)) {
-		return getState(); }
+	bool getButton(void) __attribute__((always_inline))
+	{
+		return getState();
+	}
 
 	/*!	\brief Get button hold duration
 	**	\return Current button hold duration
 	**/
-	uint32_t getHoldTime(void) __attribute__((always_inline)) {
-		return holdTime; }
+	uint32_t getHoldTime(void) __attribute__((always_inline))
+	{
+		return holdTime;
+	}
 };
-
 
 #endif /* SeqButton_h */

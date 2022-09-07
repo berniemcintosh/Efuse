@@ -3,6 +3,31 @@
 
 #define		TIME	millis()
 
+buzzer::buzzer(){
+
+}
+
+
+
+	void buzzer::sound(uint32_t reqDuration){
+		onTime = TIME;
+		isOn = true;
+		BUZZ_ON;
+		duration = reqDuration;
+
+	};
+	void buzzer::process(void){
+		if (isOn) {
+			if (TIME > (onTime + duration))
+			{
+				BUZZ_OFF;
+				isOn = false;
+
+			}
+		}
+
+	};
+
 
 void SeqButton::init(const uint8_t pin, void (*cbckON)(SeqButton*), void (*cbckOFF)(SeqButton*), const bool repeat, const bool logic, const uint32_t filter)
 {
